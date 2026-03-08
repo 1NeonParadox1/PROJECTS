@@ -1,0 +1,1 @@
+Hi This is simple Projectile motion simulation its mostly code intensive as the physics behide is pretty easy it was just hard to implement into this thing , if somethings comes up i might change this again later on for now its basically just calculating maximum height and range with different angle and velocities.
