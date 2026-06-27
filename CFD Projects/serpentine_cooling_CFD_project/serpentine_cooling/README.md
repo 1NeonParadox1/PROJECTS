@@ -56,8 +56,6 @@ serpentine_cooling/
 
 ---
 
-## Step-by-Step Instructions
-
 ### Prerequisites
 ```bash
 # Install OpenFOAM v11 (Ubuntu/WSL2)
