@@ -1,0 +1,85 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     simpleFoam;
+
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         3000;
+deltaT          1;
+writeControl    timeStep;
+writeInterval   200;
+purgeWrite      2;
+writeFormat     ascii;
+writePrecision  6;
+writeCompression off;
+timeFormat      general;
+timePrecision   6;
+runTimeModifiable true;
+
+functions
+{
+    // mesh-quality check for wall functions: aim for yPlus ~ 30-300
+    yPlus1
+    {
+        type            yPlus;
+        libs            (fieldFunctionObjects);
+        writeControl    writeTime;
+    }
+
+    wallShearStress1
+    {
+        type            wallShearStress;
+        libs            (fieldFunctionObjects);
+        writeControl    writeTime;
+    }
+
+    // U and p across the half-gap at x = 2.5 m (fully developed region)
+    // -> compare against the log-law profile
+    profileSample
+    {
+        type            sets;
+        libs            (sampling);
+        writeControl    writeTime;
+        setFormat       raw;
+        sets
+        (
+            profile_x2p5
+            {
+                type    uniform;
+                axis    y;
+                start   (2.5 0 0.005);
+                end     (2.5 0.01 0.005);
+                nPoints 200;
+            }
+        );
+        fields          (U p k);
+    }
+
+    // p along the centreline -> dp/dx for the friction-factor calculation
+    centrelineSample
+    {
+        type            sets;
+        libs            (sampling);
+        writeControl    writeTime;
+        setFormat       raw;
+        sets
+        (
+            centreline
+            {
+                type    uniform;
+                axis    x;
+                start   (0    0 0.005);
+                end     (3.0  0 0.005);
+                nPoints 300;
+            }
+        );
+        fields          (U p);
+    }
+}

@@ -1,0 +1,50 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  Serpentine Cooling Channel - Initial/Boundary condition for U
+  Re = 500 case
+  Re = rho * U * Dh / mu
+  Water: rho=998 kg/m3, mu=1.002e-3 Pa.s
+  Dh (hydraulic diameter) = 2*W*D/(W+D) = 2*0.02*0.01/(0.02+0.01) = 0.01333 m
+  U_inlet = Re * mu / (rho * Dh) = 500 * 1.002e-3 / (998 * 0.01333) = 0.1505 m/s
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0.1505 0 0);
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (0.1505 0 0);  // x-direction, Re=2000
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    hotWall
+    {
+        type            noSlip;
+    }
+
+    coldWall
+    {
+        type            noSlip;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}

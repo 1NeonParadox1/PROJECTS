@@ -1,0 +1,22 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  Serpentine Cooling Channel - turbulenceProperties
+  Using standard k-epsilon model (appropriate for channel flow Re > 300)
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      turbulenceProperties;
+}
+
+simulationType  RAS;
+
+RAS
+{
+    RASModel        kEpsilon;   // Standard k-epsilon turbulence model
+    turbulence      on;
+    printCoeffs     on;
+}

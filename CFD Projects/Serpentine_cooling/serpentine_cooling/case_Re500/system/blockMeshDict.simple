@@ -1,0 +1,112 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  Serpentine Cooling Channel - WORKING blockMeshDict
+  Single straight channel (validate physics before building full serpentine)
+
+  Geometry: 200mm x 20mm x 10mm rectangular duct
+  Units: metres
+
+  After validating this, extend to serpentine using scripts/gen_blockmesh.py
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+scale 1;
+
+// Dimensions (metres):
+// L = 0.200  (length, x-direction)
+// W = 0.020  (width,  y-direction)
+// D = 0.010  (depth,  z - 1 cell for 2D)
+
+// Mesh resolution:
+// Nx = 80  cells along length
+// Ny = 20  cells across width (refined near walls via grading)
+// Nz = 1   (pseudo-2D)
+
+vertices
+(
+    // Front face (z=0)
+    (0.000  0.000  0.000)  // 0
+    (0.200  0.000  0.000)  // 1
+    (0.200  0.020  0.000)  // 2
+    (0.000  0.020  0.000)  // 3
+    // Back face (z=0.01)
+    (0.000  0.000  0.010)  // 4
+    (0.200  0.000  0.010)  // 5
+    (0.200  0.020  0.010)  // 6
+    (0.000  0.020  0.010)  // 7
+);
+
+blocks
+(
+    // hex (v0 v1 v2 v3 v4 v5 v6 v7) (Nx Ny Nz) simpleGrading (gx gy gz)
+    // grading: 4 means cells near y=0 (hotWall) are 4x smaller than at y=W
+    hex (0 1 2 3 4 5 6 7)
+    (80 20 1)
+    simpleGrading (1 4 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 4 7 3)
+        );
+    }
+
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (1 2 6 5)
+        );
+    }
+
+    hotWall
+    {
+        // Bottom wall - constant temperature (heated surface)
+        type wall;
+        faces
+        (
+            (0 1 5 4)
+        );
+    }
+
+    coldWall
+    {
+        // Top wall - adiabatic (insulated)
+        type wall;
+        faces
+        (
+            (3 7 6 2)
+        );
+    }
+
+    frontAndBack
+    {
+        // Empty for 2D simulation
+        type empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);

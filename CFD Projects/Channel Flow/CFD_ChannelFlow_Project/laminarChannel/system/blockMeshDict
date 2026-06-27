@@ -1,0 +1,89 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  blockMeshDict - Laminar Channel Flow (half-domain, symmetry at centreline)
+\*----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+// ----- Geometry parameters (edit here only) -----
+L   3.0;     // channel length [m]
+h   0.01;    // HALF channel height [m]  (full gap H = 2h = 0.02 m)
+t   0.01;    // arbitrary depth, irrelevant (2D, empty patches)
+
+scale 1;
+
+vertices
+(
+    (0    0   0)   // 0
+    ($L   0   0)   // 1
+    ($L  $h   0)   // 2
+    (0   $h   0)   // 3
+    (0    0  $t)   // 4
+    ($L   0  $t)   // 5
+    ($L  $h  $t)   // 6
+    (0   $h  $t)   // 7
+);
+
+blocks
+(
+    // 200 cells along flow, 80 cells across half-gap
+    // grading (1 0.3 1): mild clustering of cells toward the wall (y=h)
+    hex (0 1 2 3 4 5 6 7) (200 80 1) simpleGrading (1 0.3 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 4 7 3)
+        );
+    }
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (2 6 5 1)
+        );
+    }
+    symmetry
+    {
+        type symmetryPlane;
+        faces
+        (
+            (1 5 4 0)
+        );
+    }
+    wall
+    {
+        type wall;
+        faces
+        (
+            (3 7 6 2)
+        );
+    }
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
