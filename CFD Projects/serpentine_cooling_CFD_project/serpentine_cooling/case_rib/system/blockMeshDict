@@ -1,0 +1,126 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  Serpentine Cooling Channel - RIB CASE blockMeshDict
+  Same Re=1000 conditions BUT with a rectangular rib on the hot wall
+  Rib: height=5mm, width=10mm at x=75mm (mid-channel)
+  The rib disrupts the thermal boundary layer -> enhanced Nu
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+scale 1;
+
+vertices
+(
+    // Pre-rib (x=0 to 0.075)
+    (0.000  0.000  0.000)   // 0
+    (0.075  0.000  0.000)   // 1
+    (0.075  0.020  0.000)   // 2
+    (0.000  0.020  0.000)   // 3
+    (0.000  0.000  0.010)   // 4
+    (0.075  0.000  0.010)   // 5
+    (0.075  0.020  0.010)   // 6
+    (0.000  0.020  0.010)   // 7
+
+    // Rib top corners (x=0.075 to 0.085, y=0 to 0.005)
+    (0.085  0.000  0.000)   // 8
+    (0.085  0.005  0.000)   // 9
+    (0.075  0.005  0.000)   // 10
+    (0.085  0.000  0.010)   // 11
+    (0.085  0.005  0.010)   // 12
+    (0.075  0.005  0.010)   // 13
+
+    // Full-height points at rib x-locations
+    (0.085  0.020  0.000)   // 14
+    (0.075  0.020  0.000)   // same as 2 - use 2
+    (0.085  0.020  0.010)   // 15
+
+    // Post-rib (x=0.085 to 0.200)
+    (0.200  0.000  0.000)   // 16
+    (0.200  0.020  0.000)   // 17
+    (0.200  0.000  0.010)   // 18
+    (0.200  0.020  0.010)   // 19
+);
+
+blocks
+(
+    // Pre-rib section
+    hex (0 1 2 3 4 5 6 7)
+    (30 20 1)
+    simpleGrading (1 4 1)
+
+    // Above-rib section (flow squeezes over rib)
+    hex (10 9 14 2 13 12 15 6)
+    (4 12 1)
+    simpleGrading (1 1 1)
+
+    // Post-rib section
+    hex (8 16 17 14 11 18 19 15)
+    (46 20 1)
+    simpleGrading (1 4 1)
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces ( (0 4 7 3) );
+    }
+    outlet
+    {
+        type patch;
+        faces ( (16 17 19 18) );
+    }
+    hotWall
+    {
+        type wall;
+        faces
+        (
+            (0 1 5 4)
+            (8 16 18 11)
+        );
+    }
+    rib
+    {
+        type wall;
+        faces
+        (
+            (1 10 13 5)
+            (10 9 12 13)
+            (9 8 11 12)
+        );
+    }
+    coldWall
+    {
+        type wall;
+        faces
+        (
+            (3 7 6 2)
+            (2 6 15 14)
+            (14 15 19 17)
+        );
+    }
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (0 3 2 1)
+            (2 14 9 10)
+            (10 9 8 1)
+            (14 17 16 8)
+            (4 5 6 7)
+            (6 13 12 15)
+            (13 11 12 5)
+            (15 18 11 19)
+        );
+    }
+);
+
+mergePatchPairs ();

@@ -1,0 +1,57 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  Serpentine Cooling Channel - k (turbulent kinetic energy)
+  Inlet turbulence intensity I = 5% (typical for channel flow)
+  k = 1.5 * (U*I)^2
+  For Re=500: U=0.0376 m/s, I=0.05
+  k = 1.5 * (0.0376*0.05)^2 = 5.32e-6 m2/s2
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      k;
+}
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 5.32e-6;
+
+boundaryField
+{
+    inlet
+    {
+        type            turbulentIntensityKineticEnergyInlet;
+        intensity       0.05;
+        value           uniform 5.32e-6;
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    hotWall
+    {
+        type            kqRWallFunction;
+        value           uniform 5.32e-6;
+    }
+
+    rib
+    {
+        type            noSlip;
+    }
+
+    coldWall
+    {
+        type            kqRWallFunction;
+        value           uniform 5.32e-6;
+    }
+
+    frontAndBack
+    {
+        type            empty;
+    }
+}
