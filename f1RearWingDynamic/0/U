@@ -1,0 +1,84 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - U (velocity)
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (50 0 0);
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (50 0 0);
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform (0 0 0);
+        value           uniform (50 0 0);
+    }
+
+    ground
+    {
+        type            noSlip;
+        // If modelling moving ground (recommended for realism), replace with:
+        // type            movingWallVelocity;
+        // value           uniform (50 0 0);
+    }
+
+    top
+    {
+        type            symmetry;
+    }
+
+    side1
+    {
+        type            symmetry;
+    }
+
+    side2
+    {
+        type            symmetry;
+    }
+
+    mainplane
+    {
+        type            noSlip;
+    }
+
+    endplate
+    {
+        type            noSlip;
+    }
+
+    flap
+    {
+        type            movingWallVelocity;
+        value           uniform (0 0 0);
+    }
+
+    AMI_inner
+    {
+        type            cyclicAMI;
+    }
+
+    AMI_outer
+    {
+        type            cyclicAMI;
+    }
+
+    "(.*Layer.*|frontAndBack)"
+    {
+        type            empty;
+    }
+}

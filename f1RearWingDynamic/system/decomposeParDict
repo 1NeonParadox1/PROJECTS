@@ -1,0 +1,23 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - decomposeParDict
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      decomposeParDict;
+}
+
+numberOfSubdomains 8;   // set to your actual core count
+
+method          scotch;
+
+// Alternative if you want manual control over splitting:
+// method       hierarchical;
+// hierarchicalCoeffs
+// {
+//     n           (4 2 1);
+//     delta       0.001;
+//     order       xyz;
+// }

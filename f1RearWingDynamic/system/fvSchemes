@@ -1,0 +1,55 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - fvSchemes
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+
+ddtSchemes
+{
+    default         backward;   // 2nd order implicit; required for transient DES accuracy
+                                 // and consistent with moving-mesh (ALE) flux handling,
+                                 // which pimpleFoam computes automatically via mesh.phi()
+}
+
+gradSchemes
+{
+    default         cellLimited Gauss linear 1;
+}
+
+divSchemes
+{
+    default                     none;
+
+    // LUST blend: 75% linear (central) + 25% upwind-biased linearUpwind
+    // gives low numerical dissipation needed to preserve vortex structures
+    div(phi,U)                  Gauss LUST grad(U);
+    div(phi,k)                  Gauss limitedLinear 1;
+    div(phi,omega)              Gauss limitedLinear 1;
+    div(phi,nuTilda)            Gauss limitedLinear 1;
+    div((nuEff*dev2(T(grad(U))))) Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;
+}
+
+wallDist
+{
+    method          meshWave;   // required for DES delayed function (DDES)
+}

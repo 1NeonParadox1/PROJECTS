@@ -1,0 +1,80 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - omega (specific dissipation rate)
+  Computed from: omega = sqrt(k) / (Cmu^0.25 * l), l = 0.07*chord = 0.0175 m -> omega ~ 64
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      omega;
+}
+
+dimensions      [0 0 -1 0 0 0 0];
+
+internalField   uniform 64;
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 64;
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform 64;
+        value           uniform 64;
+    }
+
+    ground
+    {
+        type            omegaWallFunction;
+        value           uniform 64;
+    }
+
+    top
+    {
+        type            symmetry;
+    }
+
+    side1
+    {
+        type            symmetry;
+    }
+
+    side2
+    {
+        type            symmetry;
+    }
+
+    mainplane
+    {
+        type            omegaWallFunction;
+        value           uniform 64;
+    }
+
+    endplate
+    {
+        type            omegaWallFunction;
+        value           uniform 64;
+    }
+
+    flap
+    {
+        type            omegaWallFunction;
+        value           uniform 64;
+    }
+
+    AMI_inner
+    {
+        type            cyclicAMI;
+    }
+
+    AMI_outer
+    {
+        type            cyclicAMI;
+    }
+}

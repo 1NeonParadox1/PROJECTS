@@ -1,0 +1,196 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - snappyHexMeshDict (dynamic / rotating flap case)
+
+  Geometry is now split into THREE wing surfaces, because the flap moves
+  independently of the rest of the wing:
+    - mainplane.stl  (fixed: lower main element)
+    - endplate.stl   (fixed: endplates, mounting pylons)
+    - flap.stl       (MOVING: the upper flap that rotates 180-225 deg)
+
+  Plus a 4th surface, rotatingZone.stl: a closed cylinder enclosing the
+  flap through its FULL range of motion. snappyHexMesh uses this to:
+    1. tag all cells inside it as cellZone "flapZone" (rotated by
+       dynamicMeshDict)
+    2. tag the cylinder's surface as faceZone "rotatingZone" (split into
+       the AMI_inner/AMI_outer patch pair by createPatchDict)
+
+  The cylinder radius/length must be generous enough that the flap STL
+  never pokes through it at ANY rotation angle - check this visually in
+  ParaView/CAD before meshing, this is the #1 cause of moving-mesh case
+  failures.
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+
+castellatedMesh true;
+snap            true;
+addLayers       true;
+
+geometry
+{
+    mainplane.stl
+    {
+        type triSurfaceMesh;
+        name mainplane;
+    }
+
+    endplate.stl
+    {
+        type triSurfaceMesh;
+        name endplate;
+    }
+
+    flap.stl
+    {
+        type triSurfaceMesh;
+        name flap;
+    }
+
+    rotatingZone.stl
+    {
+        type triSurfaceMesh;
+        name rotatingZone;
+    }
+
+    wakeBox
+    {
+        type box;
+        min ( 0.25 -0.675 0.0 );
+        max ( 3.75  0.675 1.0 );
+    }
+
+    nearWakeBox
+    {
+        type box;
+        min ( 0.25 -0.5 0.0 );
+        max ( 1.25  0.5 0.6 );
+    }
+};
+
+castellatedMeshControls
+{
+    maxLocalCells       4000000;
+    maxGlobalCells      18000000;
+    minRefinementCells  10;
+    maxLoadUnbalance    0.10;
+    nCellsBetweenLevels 4;
+
+    features
+    (
+        { file "mainplane.eMesh"; level 5; }
+        { file "endplate.eMesh";  level 5; }
+        { file "flap.eMesh";      level 5; }
+    );
+
+    refinementSurfaces
+    {
+        mainplane
+        {
+            level (5 6);
+            patchInfo { type wall; }
+        }
+        endplate
+        {
+            level (5 6);
+            patchInfo { type wall; }
+        }
+        flap
+        {
+            level (5 6);
+            patchInfo { type wall; }
+        }
+
+        // This is the key entry: marks cells inside this closed surface
+        // as cellZone "flapZone" and its boundary as faceZone "rotatingZone"
+        rotatingZone
+        {
+            level           (3 3);
+            faceZone        rotatingZone;
+            cellZone        flapZone;
+            cellZoneInside  inside;
+            boundaryType    internal;
+        }
+    }
+
+    resolveFeatureAngle 30;
+
+    refinementRegions
+    {
+        wakeBox     { mode inside; levels ((1e15 3)); }
+        nearWakeBox { mode inside; levels ((1e15 4)); }
+    }
+
+    // Must be a point in free air OUTSIDE the rotatingZone cylinder.
+    // Matches the generated placeholder geometry: well above and behind
+    // the wing. RECALCULATE THIS if you swap in your own STLs.
+    locationInMesh (1.5 0.0 1.5);
+    allowFreeStandingZoneFaces true;
+}
+
+snapControls
+{
+    nSmoothPatch     3;
+    tolerance        2.0;
+    nSolveIter       30;
+    nRelaxIter       5;
+    nFeatureSnapIter 10;
+    implicitFeatureSnap false;
+    explicitFeatureSnap true;
+    multiRegionFeatureSnap true;   // needed: multiple independent wing surfaces
+}
+
+addLayersControls
+{
+    relativeSizes   true;
+
+    layers
+    {
+        mainplane { nSurfaceLayers 10; }
+        endplate  { nSurfaceLayers 10; }
+        flap      { nSurfaceLayers 10; }
+        ground    { nSurfaceLayers 5; }
+    }
+
+    expansionRatio          1.2;
+    finalLayerThickness     0.3;
+    minThickness            0.001;
+
+    nGrow                   0;
+    featureAngle            60;
+    nRelaxIter              5;
+    nSmoothSurfaceNormals   1;
+    nSmoothNormals          3;
+    nSmoothThickness        10;
+    maxFaceThicknessRatio   0.5;
+    maxThicknessToMedialRatio 0.3;
+    minMedialAxisAngle      90;
+    nBufferCellsNoExtrude   0;
+    nLayerIter              50;
+}
+
+meshQualityControls
+{
+    maxNonOrtho             65;
+    maxBoundarySkewness     20;
+    maxInternalSkewness     4;
+    maxConcave              80;
+    minVol                  1e-13;
+    minTetQuality           1e-9;
+    minArea                 -1;
+    minTwist                0.02;
+    minDeterminant          0.001;
+    minFaceWeight           0.05;
+    minVolRatio             0.01;
+    minTriangleTwist        -1;
+
+    nSmoothScale            4;
+    errorReduction          0.75;
+}
+
+debug 0;
+mergeTolerance 1e-6;

@@ -1,0 +1,36 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - turbulenceProperties
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      turbulenceProperties;
+}
+
+simulationType  LES;   // DES models live under the LES library in OpenFOAM
+
+LES
+{
+    LESModel        kOmegaSSTDES;
+
+    turbulence      on;
+    printCoeffs     on;
+
+    delta           DeltaOmegaSST;
+
+    kOmegaSSTDESCoeffs
+    {
+        // defaults are generally fine; CDES blending constants left at standard values
+    }
+}
+
+// --- If you'd rather start simpler with URANS instead of DES, swap to: ---
+// simulationType RAS;
+// RAS
+// {
+//     RASModel        kOmegaSST;
+//     turbulence      on;
+//     printCoeffs     on;
+// }

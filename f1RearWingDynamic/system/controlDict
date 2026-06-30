@@ -1,0 +1,100 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - pimpleFoam (DES) controlDict
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     pimpleFoam;
+// pimpleFoam automatically picks up constant/dynamicMeshDict if present
+// and handles the mesh motion + AMI interpolation each timestep - no
+// separate "DyM" solver needed in modern OpenFOAM versions.
+
+startFrom       latestTime;
+startTime       0;
+
+stopAt          endTime;
+endTime         0.6;        // covers settle (0-0.05s) + full rotation (0.05-0.55s) + hold
+
+deltaT          1e-5;       // smaller than the static case: AMI rotation needs tighter
+                             // Courant control since the inner mesh is physically moving
+
+writeControl    adjustableRunTime;
+writeInterval   0.002;      // finer writes through the rotation for a smooth animation
+
+purgeWrite      0;
+
+writeFormat     binary;
+writePrecision  7;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable true;
+
+adjustTimeStep  yes;
+maxCo           1.0;
+maxAlphaCo      1.0;        // Courant limit for the moving-mesh region specifically
+maxDeltaT       5e-5;
+
+functions
+{
+    forces
+    {
+        type            forceCoeffs;
+        libs            ("libforces.so");
+        writeControl    timeStep;
+        writeInterval   10;
+
+        patches         ( mainplane endplate flap );
+
+        rho             rhoInf;
+        rhoInf          1.225;
+
+        liftDir         (0 0 1);
+        dragDir         (1 0 0);
+        pitchAxis       (0 1 0);
+
+        CofR            (0.2 0 0.85);   // approx wing centroid for generated placeholder geometry
+        magUInf         50;
+        lRef            0.25;
+        Aref            0.225;
+
+        log             true;
+    }
+
+    QCriterion
+    {
+        type            Qcriterion;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+        result          Q;
+    }
+
+    vorticity
+    {
+        type            vorticity;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+
+    wallShearStress
+    {
+        type            wallShearStress;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+        patches         ( mainplane endplate flap );
+    }
+
+    yPlus
+    {
+        type            yPlus;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+}

@@ -1,0 +1,56 @@
+#!/bin/bash
+cd "${0%/*}" || exit
+. "${WM_PROJECT_DIR:?}"/bin/tools/RunFunctions
+
+# -----------------------------------------------------------------------
+# F1 Rear Wing - Dynamic / Rotating Flap CFD - Allrun
+#
+# BEFORE RUNNING, place FOUR STL files in constant/triSurface/ (meters):
+#   mainplane.stl     fixed lower element
+#   endplate.stl      fixed endplates/pylons
+#   flap.stl          THE MOVING upper flap, modelled in its REST
+#                      (downforce) position - it gets rotated by the
+#                      solver at runtime, do not pre-rotate it
+#   rotatingZone.stl   a closed cylinder surface centred on the pivot
+#                      axis, large enough to fully enclose flap.stl
+#                      through its ENTIRE rotation sweep without ever
+#                      touching mainplane/endplate. This is NOT part of
+#                      the physical wing - it's purely a mesh-construction
+#                      surface; check clearance visually before meshing.
+#
+# Also double check before running:
+#   - origin/axis in constant/dynamicMeshDict matches your actual pivot
+#   - locationInMesh in system/snappyHexMeshDict is outside rotatingZone
+#   - CofR/lRef/Aref in system/controlDict match your real wing dims
+# -----------------------------------------------------------------------
+
+runApplication surfaceCheck constant/triSurface/mainplane.stl
+runApplication surfaceCheck constant/triSurface/endplate.stl
+runApplication surfaceCheck constant/triSurface/flap.stl
+runApplication surfaceCheck constant/triSurface/rotatingZone.stl
+
+runApplication blockMesh
+
+runApplication surfaceFeatureExtract
+
+runApplication decomposePar -copyZero
+
+runParallel snappyHexMesh -overwrite
+
+# Convert the rotatingZone faceZone (baffle faces from snappy) into the
+# matched cyclicAMI patch pair
+runParallel createPatch -overwrite
+
+runParallel checkMesh -allTopology -allGeometry
+
+runParallel renumberMesh -overwrite
+
+runParallel $(getApplication)
+
+runApplication reconstructParMesh -constant
+
+runApplication reconstructPar -latestTime
+
+echo "Done. Open with: paraFoam"
+echo "Mesh motion through the rotation can be sanity-checked first with:"
+echo "  moveDynamicMesh (dry-run, no flow solve) before committing to the full run"

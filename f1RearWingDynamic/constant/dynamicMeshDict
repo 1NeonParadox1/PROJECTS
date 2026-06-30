@@ -1,0 +1,56 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - dynamicMeshDict
+  Rigid-body rotation of the flap cellZone about its pivot axis.
+  Background mesh stays fixed; flap zone rotates inside it, connected
+  via a cyclicAMI interface (see constant/polyMesh boundary, created
+  by createPatchDict after topoSet).
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dynamicMeshDict;
+}
+
+dynamicFvMesh   dynamicMotionSolverFvMesh;
+
+motionSolverLibs ("libfvMotionSolvers.so");
+
+motionSolver    solidBody;
+
+solidBodyCoeffs
+{
+    cellZone        flapZone;     // auto-created by snappyHexMesh from the
+                                   // rotatingZone.stl entry in refinementSurfaces
+
+    solidBodyMotionFunction rotatingMotion;
+
+    rotatingMotionCoeffs
+    {
+        // Pivot point: centre of the flap, NOT leading or trailing edge.
+        // Matches the generated placeholder geometry's flap mid-chord -
+        // (0.315, 0, 0.89). RECALCULATE THIS if you swap in your own flap.stl.
+        origin          (0.315 0.0 0.89);
+
+        // Rotation axis: spanwise (along the wing), matching how the
+        // flap rotates front-down/rear-up rather than a simple end-hinge.
+        // Matched cylinder: rotatingZone.stl, radius 0.068m (verified
+        // clearance: flap needs 0.060m, mainplane sits 0.076m from pivot
+        // axis - only ~16mm of real margin, so don't enlarge this casually)
+        axis            (0 1 0);
+
+        // omega in rad/s. Real deployment is fast (well under 1s) but
+        // for a clean, controllable, renderable sweep we ramp smoothly
+        // over ~0.4s for a 200 degree rotation (slightly past 180,
+        // matching reports of ~180-225 degree sweep)
+        omega           table
+        (
+            (0      0.0)
+            (0.05   0.0)     // settle flow in downforce position first
+            (0.45   8.73)    // ramp up to ~500 deg/s -> completes ~200deg by t=0.45-0.5s
+            (0.50   8.73)
+            (0.55   0.0)     // hold at flipped position
+        );
+    }
+}

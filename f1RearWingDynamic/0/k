@@ -1,0 +1,80 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - k (turbulent kinetic energy)
+  Computed from: I = 1%, U = 50 m/s -> k = 1.5*(U*I)^2 = 0.375
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      k;
+}
+
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform 0.375;
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 0.375;
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform 0.375;
+        value           uniform 0.375;
+    }
+
+    ground
+    {
+        type            kqRWallFunction;
+        value           uniform 1e-6;
+    }
+
+    top
+    {
+        type            symmetry;
+    }
+
+    side1
+    {
+        type            symmetry;
+    }
+
+    side2
+    {
+        type            symmetry;
+    }
+
+    mainplane
+    {
+        type            kqRWallFunction;
+        value           uniform 1e-6;
+    }
+
+    endplate
+    {
+        type            kqRWallFunction;
+        value           uniform 1e-6;
+    }
+
+    flap
+    {
+        type            kqRWallFunction;
+        value           uniform 1e-6;
+    }
+
+    AMI_inner
+    {
+        type            cyclicAMI;
+    }
+
+    AMI_outer
+    {
+        type            cyclicAMI;
+    }
+}

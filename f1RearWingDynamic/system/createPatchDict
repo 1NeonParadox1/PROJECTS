@@ -1,0 +1,45 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  F1 Rear Wing - createPatchDict
+  Splits the AMIFaces faceZone (cylinder boundary around the flap) into
+  two cyclicAMI patches: one belonging to the rotating flap zone side,
+  one belonging to the static background side. These interpolate flow
+  variables across the gap every timestep as the inner mesh rotates.
+\*-----------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      createPatchDict;
+}
+
+pointSync false;
+
+patches
+(
+    {
+        // Inner side, belongs to the rotating flapZone cells
+        name            AMI_inner;
+        patchInfo
+        {
+            type            cyclicAMI;
+            matchTolerance  0.0001;
+            neighbourPatch  AMI_outer;
+        }
+        constructFrom   faceZone;
+        faceZone        rotatingZone;   // produced by snappyHexMesh, see snappyHexMeshDict
+    }
+
+    {
+        // Outer side, belongs to the static background mesh
+        name            AMI_outer;
+        patchInfo
+        {
+            type            cyclicAMI;
+            matchTolerance  0.0001;
+            neighbourPatch  AMI_inner;
+        }
+        constructFrom   faceZone;
+        faceZone        rotatingZone;
+    }
+);
