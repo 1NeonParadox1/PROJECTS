@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Resonance · Semantic Media Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◉</span>
+    <span class="brand-name">Resonance</span>
+    <span class="brand-tag">semantic media search</span>
+  </div>
+  <div class="status-pill" id="systemStatus">
+    <span class="dot"></span> vector index ready
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- LEFT: Ingest + Library -->
+  <section class="panel panel-left">
+    <div class="panel-head">
+      <h2>01 — Ingest</h2>
+      <p>Drop in audio or video. We transcribe, chunk, and embed it automatically.</p>
+    </div>
+
+    <label class="dropzone" id="dropzone" for="fileInput">
+      <input type="file" id="fileInput" accept=".mp4,.mov,.mkv,.avi,.mp3,.wav,.m4a,.flac,.webm" hidden />
+      <div class="dz-icon">⌁</div>
+      <div class="dz-text">
+        <strong>Click or drag a file here</strong>
+        <span>MP4, MOV, MKV, MP3, WAV, M4A, FLAC, WEBM</span>
+      </div>
+    </label>
+
+    <div class="job-tracker" id="jobTracker" hidden>
+      <div class="job-row">
+        <span id="jobFilename">—</span>
+        <span id="jobPercent">0%</span>
+      </div>
+      <div class="job-bar"><div class="job-bar-fill" id="jobBarFill"></div></div>
+      <div class="job-message" id="jobMessage">Queued for processing…</div>
+    </div>
+
+    <div class="panel-head panel-head-sm">
+      <h2>02 — Library</h2>
+      <p>Indexed files. Click to scope a search, or jump straight in.</p>
+    </div>
+    <div class="library-list" id="libraryList">
+      <div class="empty-hint">No media indexed yet. Upload something above.</div>
+    </div>
+  </section>
+
+  <!-- CENTER: Search + Results -->
+  <section class="panel panel-center">
+    <div class="panel-head">
+      <h2>03 — Ask by meaning</h2>
+      <p>Not keywords. Concepts. Try “where did they talk about budget cuts”.</p>
+    </div>
+
+    <form class="search-bar" id="searchForm">
+      <span class="search-icon">⟡</span>
+      <input type="text" id="searchInput" placeholder="Where did they mention the budget cuts?" autocomplete="off" />
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="scope-row" id="scopeRow">
+      <span class="scope-label">scope:</span>
+      <button class="scope-chip active" data-scope="all">entire library</button>
+    </div>
+
+    <div class="results" id="results">
+      <div class="empty-hint big">
+        <div class="empty-icon">∿∿∿</div>
+        Results will appear here as ranked moments, not pages — each one a timestamp you can jump straight to.
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Player -->
+  <section class="panel panel-right">
+    <div class="panel-head">
+      <h2>04 — Playback</h2>
+      <p>Select a result to seek instantly to that moment.</p>
+    </div>
+
+    <div class="player-shell" id="playerShell">
+      <video id="mediaPlayer" controls></video>
+      <div class="player-empty" id="playerEmpty">
+        <div class="empty-icon">▷</div>
+        No media selected
+      </div>
+    </div>
+
+    <div class="player-meta" id="playerMeta" hidden>
+      <div class="meta-name" id="playerFilename">—</div>
+      <div class="meta-time" id="playerTimecode">00:00 → 00:00</div>
+    </div>
+
+    <div class="transcript-strip" id="transcriptStrip"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span>FFmpeg → faster-whisper ASR → sentence-transformers embeddings → Qdrant vector search</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
